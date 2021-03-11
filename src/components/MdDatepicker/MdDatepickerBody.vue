@@ -26,13 +26,13 @@
             <div class="md-datepicker-days">
               <span class="md-datepicker-empty" v-for="day in prefixEmptyDays" :key="'day-empty-'+day"></span>
               <div
+                v-for="day in daysInMonth" :key="'day-'+day"
                 class="md-datepicker-day"
                 :class="{
                   'md-datepicker-rangestart': isRangeStart(day),
                   'md-datepicker-rangeend': isRangeEnd(day),
                   'md-datepicker-rangemid': isRangeMid(day),
                 }"
-                v-for="day in daysInMonth" :key="'day-'+day"
               >
                 <span
                   class="md-datepicker-day-button"
@@ -41,6 +41,8 @@
                     'md-datepicker-today': isToday(day),
                     'md-datepicker-disabled': isDisabled(day)
                   }"
+                  @mouseover="hoveringDate=makeDate(day)"
+                  @mouseout="hoveringDate=null"
                   @click="selectDate(day)">{{ day }}</span>
               </div>
             </div>
@@ -114,7 +116,8 @@
     },
     data: () => ({
       monthAction: null,
-      availableYears: null
+      availableYears: null,
+      hoveringDate: null,
     }),
     computed: {
       isRangePicker() {
@@ -128,6 +131,17 @@
       },
       isNeitherSelected() {
         return this.isRangePicker && !this.selectedDate[0] && !this.selectedDate[1]
+      },
+      highlightedRange() {
+        if (!this.isRangePicker || this.isNeitherSelected) {
+          return null;
+        } else if (this.isBothSelected) {
+          return this.selectedDate;
+        } else if (this.hoveringDate) {
+          return this.makeRange(this.hoveringDate);
+        } else {
+          return null;
+        }
       },
       currentView: {
         get() {
@@ -219,14 +233,14 @@
         }
       },
       isRangeStart(day) {
-        return this.isBothSelected && isSameDay(this.selectedDate[0], this.makeDate(day));
+        return this.highlightedRange && isSameDay(this.highlightedRange[0], this.makeDate(day))
       },
       isRangeEnd(day) {
-        return this.isBothSelected && isSameDay(this.selectedDate[1], this.makeDate(day));
+        return this.highlightedRange && isSameDay(this.highlightedRange[1], this.makeDate(day));
       },
       isRangeMid(day) {
         let date = this.makeDate(day);
-        return this.isBothSelected && isAfter(date, this.selectedDate[0]) && isBefore(date, this.selectedDate[1]);
+        return this.highlightedRange && isAfter(date, this.highlightedRange[0], date) && isBefore(date, this.highlightedRange[1]);
       },
       isToday (day) {
         return isSameDay(new Date(), this.makeDate(day))
@@ -258,24 +272,26 @@
         if(this.isDatePicker) {
           value = newDate;
         } else {
-          // If both dates are already picked, nor a neither was picked
-          // start a new range with the selected date. Otherwise, set
-          // this as the first or last date as appropriate
-          if(this.isBothSelected || this.isNeitherSelected) {
-            value = [newDate, null]
-          } else {
-            let date = this.selectedDate[0] || this.selectedDate[1];
-            if(isBefore(newDate, date)) {
-              value = [newDate, date];
-            } else {
-              value = [date, newDate];
-            }
-          }
+          value = this.makeRange(newDate);
         }
 
         this.$emit('input', value);
       },
+      makeRange(newDate) {
+        // If both dates are already picked, nor a neither was picked
+        // start a new range with the selected date. Otherwise, set
+        // this as the first or last date as appropriate
+        if(this.isBothSelected || this.isNeitherSelected) {
+          return [newDate, null]
+        }
 
+        let date = this.selectedDate[0] || this.selectedDate[1];
+        if(isBefore(newDate, date)) {
+          return [newDate, date];
+        } else {
+          return [date, newDate];
+        }
+      },
     },
     created() {
       this.setAvailableYears()
@@ -477,13 +493,16 @@
       position: absolute;
       top: 0;
       bottom: 0;
-      width: 50%;
+      width: 30px;
+      pointer-events: none;
     }
     .md-datepicker-rangestart::before {
-      right: 0;
+      border-radius: 30px 0 0 30px;
+      right: 0px;
     }
     .md-datepicker-rangeend::before {
       left: 0;
+      border-radius: 0 30px 30px 0;
     }
 
     .md-datepicker-today {
