@@ -4,11 +4,17 @@
 <example src="./examples/CancelOpenDatepicker.vue" />
 <example src="./examples/CloseOnSelectDatepicker.vue" />
 <example src="./examples/DisabledDatesDatepicker.vue" />
+<example src="./examples/DaterangePicker.vue" />
 
 <template>
   <page-container centered :title="$t('pages.datepicker.title')">
     <div class="page-container-section">
       <p>Datepickers use a dialog window and provide a simple way to select a single value from a pre-determined set. The component can have disabled dates and it's really easy to use.</p>
+    </div>
+
+    <div class="page-container-section">
+      <h2 id="datepicker">Daterange Picker</h2>
+      <code-example title="Daterange Picker Example" :component="examples['daterange-picker']"></code-example>
     </div>
 
     <div class="page-container-section">
