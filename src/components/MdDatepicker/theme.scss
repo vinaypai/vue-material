@@ -37,6 +37,12 @@
       @include md-theme-property(color, primary, background);
     }
 
+    .md-datepicker-rangemid,
+    .md-datepicker-rangestart::before,
+    .md-datepicker-rangeend::before {
+      @include md-theme-property(background-color, divider);
+    }
+
     .md-datepicker-day-button,
     .md-datepicker-month-button,
     .md-datepicker-year-button {

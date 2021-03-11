@@ -13,7 +13,7 @@
 
         <div class="md-daterange-picker-calendars">
           <md-datepicker-body
-            v-model="selectedRange[0]"
+            v-model="selectedRange"
             :style="contentStyles"
             :md-current-date.sync="currentDates[0]"
             :md-current-view.sync="currentView"
@@ -22,7 +22,7 @@
             />
 
           <md-datepicker-body
-            v-model="selectedRange[1]"
+            v-model="selectedRange"
             :style="contentStyles"
             :md-current-date.sync="currentDates[1]"
             :md-current-view.sync="currentView"

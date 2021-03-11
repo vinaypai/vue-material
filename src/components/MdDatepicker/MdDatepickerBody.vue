@@ -25,7 +25,15 @@
 
             <div class="md-datepicker-days">
               <span class="md-datepicker-empty" v-for="day in prefixEmptyDays" :key="'day-empty-'+day"></span>
-              <div class="md-datepicker-day" v-for="day in daysInMonth" :key="'day-'+day">
+              <div
+                class="md-datepicker-day"
+                :class="{
+                  'md-datepicker-rangestart': isRangeStart(day),
+                  'md-datepicker-rangeend': isRangeEnd(day),
+                  'md-datepicker-rangemid': isRangeMid(day),
+                }"
+                v-for="day in daysInMonth" :key="'day-'+day"
+              >
                 <span
                   class="md-datepicker-day-button"
                   :class="{
@@ -73,6 +81,8 @@
   import getDaysInMonth from 'date-fns/getDaysInMonth'
   import getMonth from 'date-fns/getMonth'
   import getYear from 'date-fns/getYear'
+  import isAfter from 'date-fns/isAfter'
+  import isBefore from 'date-fns/isBefore'
   import isEqual from 'date-fns/isEqual'
   import isSameDay from 'date-fns/isSameDay'
   import setDate from 'date-fns/setDate'
@@ -87,14 +97,6 @@
 
   const daysInAWeek = 7
 
-  const getElements = (el, selector) => {
-    if (el && el.querySelector) {
-      return el.querySelectorAll(selector)
-    }
-
-    return false
-  }
-
   export default new MdComponent({
     name: 'MdDatepickerBody',
     components: {
@@ -105,7 +107,7 @@
       prop: 'selectedDate'
     },
     props: {
-      selectedDate: Date,
+      selectedDate: [Date, Array],
       mdCurrentDate: { type: Date, default: () => new Date() },
       mdCurrentView: { type: String, required: true },
       mdDisabledDates: [Array, Function],
@@ -115,6 +117,18 @@
       availableYears: null
     }),
     computed: {
+      isRangePicker() {
+        return Array.isArray(this.selectedDate)
+      },
+      isDatePicker() {
+        return !this.isRangePicker
+      },
+      isBothSelected() {
+        return this.isRangePicker && !!this.selectedDate[0] && !!this.selectedDate[1]
+      },
+      isNeitherSelected() {
+        return this.isRangePicker && !this.selectedDate[0] && !this.selectedDate[1]
+      },
       currentView: {
         get() {
           return this.mdCurrentView
@@ -192,15 +206,34 @@
         this.monthAction = 'next'
         this.currentDate = addMonths(this.currentDate, 1)
       },
+      makeDate(day) {
+        return setDate(this.currentDate, day);
+      },
       isSelectedDay (day) {
-        return isEqual(this.selectedDate, setDate(this.currentDate, day))
+        let date = this.makeDate(day);
+        if(this.isRangePicker) {
+          return this.selectedDate[0] && isSameDay(this.selectedDate[0], date) ||
+            this.selectedDate[1] && isSameDay(this.selectedDate[1], date);
+        } else {
+          return this.isDatePicker && isEqual(this.selectedDate, this.makeDate(day));
+        }
+      },
+      isRangeStart(day) {
+        return this.isBothSelected && isSameDay(this.selectedDate[0], this.makeDate(day));
+      },
+      isRangeEnd(day) {
+        return this.isBothSelected && isSameDay(this.selectedDate[1], this.makeDate(day));
+      },
+      isRangeMid(day) {
+        let date = this.makeDate(day);
+        return this.isBothSelected && isAfter(date, this.selectedDate[0]) && isBefore(date, this.selectedDate[1]);
       },
       isToday (day) {
-        return isSameDay(new Date(), setDate(this.currentDate, day))
+        return isSameDay(new Date(), this.makeDate(day))
       },
       isDisabled (day) {
         if (this.mdDisabledDates) {
-          const targetDate = setDate(this.currentDate, day)
+          const targetDate = this.makeDate(day)
 
           if (Array.isArray(this.mdDisabledDates)) {
             return this.handleDisabledDateByArray(targetDate)
@@ -218,9 +251,29 @@
         this.currentView = 'month'
       },
       selectDate (day) {
-        let newDate = setDate(this.currentDate, day)
+        let newDate = this.makeDate(day)
         this.currentDate = newDate
-        this.$emit('input', newDate)
+
+        let value;
+        if(this.isDatePicker) {
+          value = newDate;
+        } else {
+          // If both dates are already picked, nor a neither was picked
+          // start a new range with the selected date. Otherwise, set
+          // this as the first or last date as appropriate
+          if(this.isBothSelected || this.isNeitherSelected) {
+            value = [newDate, null]
+          } else {
+            let date = this.selectedDate[0] || this.selectedDate[1];
+            if(isBefore(newDate, date)) {
+              value = [newDate, date];
+            } else {
+              value = [date, newDate];
+            }
+          }
+        }
+
+        this.$emit('input', value);
       },
 
     },
@@ -414,8 +467,23 @@
       text-align: center;
     }
 
-    .md-datepicker-selected {
+    .md-datepicker-selected, .md-datepicker-rangestart, .md-datepicker-rangeend {
       font-weight: 700;
+      position: relative;
+    }
+
+    .md-datepicker-rangestart::before, .md-datepicker-rangeend::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 50%;
+    }
+    .md-datepicker-rangestart::before {
+      right: 0;
+    }
+    .md-datepicker-rangeend::before {
+      left: 0;
     }
 
     .md-datepicker-today {
