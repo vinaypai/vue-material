@@ -17,6 +17,7 @@
             :style="contentStyles"
             :md-current-date="currentDateLeft" @update:mdCurrentDate="updateLeftCurrentDate"
             :md-current-view.sync="currentView"
+            :md-hovering-date.sync="hoveringDate"
             :md-disabled-dates="mdDisabledDates"
             @input="onDateSelect"
             />
@@ -27,6 +28,7 @@
             :md-current-date="currentDateRight" @update:mdCurrentDate="updateRightCurrentDate"
             :md-current-view.sync="currentView"
             :md-disabled-dates="mdDisabledDates"
+            :md-hovering-date.sync="hoveringDate"
             @input="onDateSelect"
             />
         </div>
@@ -87,6 +89,7 @@
       showDialog: false,
       currentView: 'day',
       contentStyles: {},
+      hoveringDate: null
     }),
     computed: {
       locale () {

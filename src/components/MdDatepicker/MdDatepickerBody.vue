@@ -113,11 +113,11 @@
       mdCurrentDate: { type: Date, default: () => new Date() },
       mdCurrentView: { type: String, required: true },
       mdDisabledDates: [Array, Function],
+      mdHoveringDate: Date
     },
     data: () => ({
       monthAction: null,
       availableYears: null,
-      hoveringDate: null,
     }),
     computed: {
       isRangePicker() {
@@ -148,7 +148,7 @@
           return this.mdCurrentView
         },
         set(newview) {
-          this.$emit('update:mdCurrentView', newview);
+          this.$emit('update:mdCurrentView', newview)
         }
       },
       currentDate: {
@@ -157,6 +157,14 @@
         },
         set(newdate) {
           this.$emit('update:mdCurrentDate', newdate)
+        }
+      },
+      hoveringDate: {
+        get() {
+          return this.mdHoveringDate;
+        },
+        set(newDate) {
+          this.$emit('update:mdHoveringDate', newDate)
         }
       },
       locale () {
