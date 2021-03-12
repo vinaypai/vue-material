@@ -88,6 +88,7 @@
       selectedRange: [null, null],
       showDialog: false,
       currentViewLeft: 'day',
+      currentViewRight: 'day',
       contentStyles: {},
       hoveringDate: null
     }),
