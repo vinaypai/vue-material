@@ -99,6 +99,14 @@
 
   const daysInAWeek = 7
 
+  const getElements = (el, selector) => {
+    if (el && el.querySelector) {
+      return el.querySelectorAll(selector)
+    }
+
+    return false
+  }
+
   export default new MdComponent({
     name: 'MdDatepickerBody',
     components: {
@@ -299,6 +307,23 @@
         } else {
           return [date, newDate];
         }
+      },
+    },
+    watch: {
+      mdCurrentView () {
+        this.$nextTick().then(() => {
+          if (this.mdCurrentView === 'year') {
+            const activeYear = getElements(this.$el, '.md-datepicker-year-button.md-datepicker-selected')
+
+            if (activeYear.length) {
+              activeYear[0].scrollIntoView({
+                behavior: 'instant',
+                block: 'center',
+                inline: 'center'
+              })
+            }
+          }
+        })
       },
     },
     created() {

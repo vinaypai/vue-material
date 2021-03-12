@@ -16,7 +16,7 @@
             v-model="selectedRange"
             :style="contentStyles"
             :md-current-date="currentDateLeft" @update:mdCurrentDate="updateLeftCurrentDate"
-            :md-current-view.sync="currentView"
+            :md-current-view.sync="currentViewLeft"
             :md-hovering-date.sync="hoveringDate"
             :md-disabled-dates="mdDisabledDates"
             @input="onDateSelect"
@@ -26,7 +26,7 @@
             v-model="selectedRange"
             :style="contentStyles"
             :md-current-date="currentDateRight" @update:mdCurrentDate="updateRightCurrentDate"
-            :md-current-view.sync="currentView"
+            :md-current-view.sync="currentViewRight"
             :md-disabled-dates="mdDisabledDates"
             :md-hovering-date.sync="hoveringDate"
             @input="onDateSelect"
@@ -87,7 +87,7 @@
       currentDateRight: null,
       selectedRange: [null, null],
       showDialog: false,
-      currentView: 'day',
+      currentViewLeft: 'day',
       contentStyles: {},
       hoveringDate: null
     }),
@@ -155,21 +155,6 @@
           }
         })
       },
-      currentView () {
-        this.$nextTick().then(() => {
-          if (this.currentView === 'year') {
-            const activeYear = getElements(this.$el, '.md-datepicker-year-button.md-datepicker-selected')
-
-            if (activeYear.length) {
-              activeYear[0].scrollIntoView({
-                behavior: 'instant',
-                block: 'center',
-                inline: 'center'
-              })
-            }
-          }
-        })
-      },
     },
     methods: {
       setContentStyles() {
@@ -203,7 +188,8 @@
       resetDate () {
         this.selectedRange = this.mdDateRange || [null, null]
         this.resetCurrentDates()
-        this.currentView = 'day'
+        this.currentViewLeft = 'day'
+        this.currentViewRight = 'day'
       },
       resetCurrentDates() {
         this.currentDateLeft = this.selectedRange[0] || new Date()
@@ -216,7 +202,7 @@
       },
       onDateSelect() {
         // Only emit update event if we're in a day view, not switching months or years
-        if (this.mdImmediately && this.currentView === 'day') {
+        if (this.mdImmediately && this.currentViewLeft === 'day' && this.currentViewRight === 'day') {
           this.$emit('update:mdDateRange', this.selectedRange)
           this.closeDialog()
         }

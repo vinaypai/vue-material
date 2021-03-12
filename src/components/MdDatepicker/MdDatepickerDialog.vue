@@ -132,21 +132,6 @@
           }
         })
       },
-      currentView () {
-        this.$nextTick().then(() => {
-          if (this.currentView === 'year') {
-            const activeYear = getElements(this.$el, '.md-datepicker-year-button.md-datepicker-selected')
-
-            if (activeYear.length) {
-              activeYear[0].scrollIntoView({
-                behavior: 'instant',
-                block: 'center',
-                inline: 'center'
-              })
-            }
-          }
-        })
-      },
     },
     methods: {
       setContentStyles() {
