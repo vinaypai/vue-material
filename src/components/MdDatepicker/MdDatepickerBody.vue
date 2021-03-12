@@ -493,16 +493,15 @@
       position: absolute;
       top: 0;
       bottom: 0;
-      width: 30px;
+      width: 50%;
       pointer-events: none;
+      z-index: -1;
     }
     .md-datepicker-rangestart::before {
-      border-radius: 30px 0 0 30px;
-      right: 0px;
+      right: 0;
     }
     .md-datepicker-rangeend::before {
       left: 0;
-      border-radius: 0 30px 30px 0;
     }
 
     .md-datepicker-today {
