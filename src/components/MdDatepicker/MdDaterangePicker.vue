@@ -8,7 +8,7 @@
     <keep-alive>
       <md-daterange-picker-dialog
         v-if="showDialog"
-        :md-date.sync="localDate"
+        :md-date-range.sync="localDateRange"
         :md-disabled-dates="mdDisabledDates"
         :mdImmediately="mdImmediately"
         @md-closed="toggleDialog"
@@ -33,6 +33,8 @@
   import MdField from 'components/MdField/MdField'
   import MdInput from 'components/MdField/MdInput/MdInput'
 
+  const rangeJoin = ' to ';
+
   export default {
     name: 'MdDaterangePicker',
     components: {
@@ -43,7 +45,22 @@
       MdDaterangePickerDialog
     },
     props: {
-      value: [String, Number, Date],
+      value: {
+        type: Array,
+        validator(value) {
+          if(!Array.isArray(value) || value.length != 2) {
+            Vue.util.warn('Invalid value: Array of length 2 required')
+          } else if(value[0].constructor !== value[1].constructor) {
+            Vue.util.warn('Invalid value: Both elements must have the same type')
+          } else if(![Date, String, Number].find(typ => value[0] instanceof typ)) {
+            Vue.util.warn('Invalid value: Require Array of two Date, String or Number')
+          } else {
+            return true;
+          }
+
+          return false;
+        }
+      },
       mdDisabledDates: [Array, Function],
       mdOpenOnFocus: {
         type: Boolean,
@@ -76,7 +93,7 @@
       // String for input
       inputDate: '',
       // Date for real value
-      localDate: null
+      localDateRange: null
     }),
     computed: {
       locale () {
@@ -105,23 +122,27 @@
         return this.value === null || this.value === undefined
       },
       isModelTypeString () {
-        return typeof this.value === 'string'
+        return !this.isModelNull && typeof this.value[0] === 'string'
       },
       isModelTypeNumber () {
-        return Number.isInteger(this.value) && this.value >= 0
+        return !this.isModelNull && Number.isInteger(this.value[0]) && this.value[0] >= 0
       },
       isModelTypeDate () {
-        return typeof this.value === 'object' && this.value instanceof Date && isValid(this.value)
+        return !this.isModelNull && typeof this.value[0] === 'object' && this.value[0] instanceof Date && isValid(this.value[0])
       },
       localString () {
-        return this.localDate && format(this.localDate, this.dateFormat)
+        return this.localDateRange && this.localDateRange.map(ld => format(ld, this.dateFormat))
       },
       localNumber () {
-        return this.localDate && Number(this.localDate)
+        return this.localDateRange && this.localDateRange.map(ld => Number(ld))
       },
       parsedInputDate () {
-        const parsedDate = parse(this.inputDate, this.dateFormat, new Date())
-        return parsedDate && isValid(parsedDate) ? parsedDate : null
+        const parsedRange = this.inputDate
+          .split(rangeJoin, 2)
+          .map(dp => parse(dp, this.dateFormat, new Date()))
+          .filter(itm => isValid(itm));
+
+        return parsedRange.length == 2 ? parsedRange : null
       },
       pattern () {
         return this.dateFormat.replace(/yyyy|MM|dd/g, match => {
@@ -139,10 +160,10 @@
       inputDate (value) {
         this.inputDateToLocalDate()
       },
-      localDate () {
-        this.inputDate = this.localString
+      localDateRange () {
+        this.inputDate = this.localString ? this.localString.join(rangeJoin) : ''
         if (this.modelType === Date) {
-          this.$emit('input', this.localDate)
+          this.$emit('input', this.localDateRange)
         }
       },
       localString () {
@@ -164,7 +185,7 @@
       mdModelType (type) {
         switch (type) {
         case Date:
-          this.$emit('input', this.localDate)
+          this.$emit('input', this.localDateRange)
           break
         case String:
           this.$emit('input', this.localString)
@@ -175,8 +196,8 @@
         }
       },
       dateFormat () {
-        if (this.localDate) {
-          this.inputDate = format(this.localDate, this.dateFormat)
+        if (this.localDateRange) {
+          this.inputDate = this.localDateRange.map(ld => format(ld, this.dateFormat))
         }
       }
     },
@@ -201,26 +222,26 @@
       inputDateToLocalDate () {
         if (this.inputDate) {
           if (this.parsedInputDate) {
-            this.localDate = this.parsedInputDate
+            this.localDateRange = this.parsedInputDate
           }
         } else {
-          this.localDate = null
+          this.localDateRange = null
         }
       },
       valueDateToLocalDate () {
         if (this.isModelNull) {
-          this.localDate = null
+          this.localDateRange = null
         } else if (this.isModelTypeNumber) {
-          this.localDate = new Date(this.value)
+          this.localDateRange = this.value.map(v => new Date(v))
         } else if (this.isModelTypeDate) {
-          this.localDate = this.value
+          this.localDateRange = this.value
         } else if (this.isModelTypeString) {
-          let parsedDate = parse(this.value, this.dateFormat, new Date())
+          let parsedRange = this.value.map(v => parse(v, this.dateFormat, new Date()));
 
-          if (isValid(parsedDate)) {
-            this.localDate = parse(this.value, this.dateFormat, new Date())
-          } else {
+          if(parsedRange.find(pd => !isValid(pd))) {
             Vue.util.warn(`The datepicker value is not a valid date. Given value: ${this.value}, format: ${this.dateFormat}`)
+          } else {
+            this.localDateRange = parsedRange;
           }
         } else {
           Vue.util.warn(`The datepicker value is not a valid date. Given value: ${this.value}`)
