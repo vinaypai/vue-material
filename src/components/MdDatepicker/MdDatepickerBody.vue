@@ -511,6 +511,9 @@
     .md-datepicker-rangeend::before {
       left: 0;
     }
+    .md-datepicker-rangestart.md-datepicker-rangeend::before {
+      display: none; // Prevent odd display when start==end
+    }
 
     .md-datepicker-today {
       font-weight: 700;
