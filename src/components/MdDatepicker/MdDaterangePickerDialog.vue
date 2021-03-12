@@ -15,7 +15,7 @@
           <md-datepicker-body
             v-model="selectedRange"
             :style="contentStyles"
-            :md-current-date.sync="currentDates[0]"
+            :md-current-date="currentDateLeft" @update:mdCurrentDate="updateLeftCurrentDate"
             :md-current-view.sync="currentView"
             :md-disabled-dates="mdDisabledDates"
             @input="onDateSelect"
@@ -24,7 +24,7 @@
           <md-datepicker-body
             v-model="selectedRange"
             :style="contentStyles"
-            :md-current-date.sync="currentDates[1]"
+            :md-current-date="currentDateRight" @update:mdCurrentDate="updateRightCurrentDate"
             :md-current-view.sync="currentView"
             :md-disabled-dates="mdDisabledDates"
             @input="onDateSelect"
@@ -41,10 +41,14 @@
 </template>
 
 <script>
+  import addMonths from 'date-fns/addMonths'
   import getDate from 'date-fns/getDate'
   import getDay from 'date-fns/getDay'
   import getMonth from 'date-fns/getMonth'
   import getYear from 'date-fns/getYear'
+  import isAfter from 'date-fns/isAfter'
+  import isBefore from 'date-fns/isBefore'
+  import isSameMonth from 'date-fns/isSameMonth'
 
   import MdComponent from 'core/MdComponent'
   import MdPopover from 'components/MdPopover/MdPopover'
@@ -69,7 +73,7 @@
       MdDatepickerBody,
     },
     props: {
-      mdDate: Date,
+      mdDateRange: Array,
       mdDisabledDates: [Array, Function],
       mdImmediately: {
         type: Boolean,
@@ -77,7 +81,8 @@
       }
     },
     data: () => ({
-      currentDates: [null, null],
+      currentDateLeft: null,
+      currentDateRight: null,
       selectedRange: [null, null],
       showDialog: false,
       currentView: 'day',
@@ -104,7 +109,7 @@
         return this.selectedRange[0];
       },
       currentDate() { // TODO: Remove this
-        return this.currentDates[0];
+        return this.currentDateLeft;
       },
       currentDay () {
         if (this.selectedDate) {
@@ -136,9 +141,9 @@
       },
     },
     watch: {
-      mdDate () {
-        this.currentDates = [this.mdDate || new Date(), this.mdDate || new Date()]
-        this.selectedDate = [this.mdDate, this.mdDate]
+      mdDateRange () {
+        this.selectedRange = this.mdDateRange || [null, null]
+        this.resetCurrentDates()
       },
       currentDate (next, previous) {
         this.$nextTick().then(() => {
@@ -189,21 +194,46 @@
         this.closeDialog()
       },
       onConfirm () {
-        this.$emit('update:mdDate', this.selectedDate)
+        this.$emit('update:mdDateRange', this.selectedRange)
         this.closeDialog()
       },
       resetDate () {
-        this.currentDates = [this.mdDate || new Date(), this.mdDate || new Date()]
-        this.selectedRange = [this.mdDate, this.mdDate]
+        this.selectedRange = this.mdDateRange || [null, null]
+        this.resetCurrentDates()
         this.currentView = 'day'
+      },
+      resetCurrentDates() {
+        this.currentDateLeft = this.selectedRange[0] || new Date()
+
+        if(this.selectedRange[1] && !isSameMonth(this.selectedRange[1], this.currentDateLeft)) {
+          this.currentDateRight = this.selectedRange[1]
+        } else {
+          this.currentDateRight = addMonths(this.currentDateLeft, 1)
+        }
       },
       onDateSelect() {
         // Only emit update event if we're in a day view, not switching months or years
         if (this.mdImmediately && this.currentView === 'day') {
-          this.$emit('update:mdDate', this.selectedDate)
+          this.$emit('update:mdDateRange', this.selectedRange)
           this.closeDialog()
         }
-      }
+      },
+      updateLeftCurrentDate(date) {
+        // Don't allow the left calendar to be >= the right calendar
+        if(isAfter(date, this.currentDateRight) || isSameMonth(date, this.currentDateRight)) {
+          return;
+        }
+
+        this.currentDateLeft = date;
+      },
+      updateRightCurrentDate(date) {
+        // Don't allow the right calendar to be <= the right calendar
+        if(isBefore(date, this.currentDateLeft) || isSameMonth(date, this.currentDateLeft)) {
+          return;
+        }
+
+        this.currentDateRight = date;
+      },
     },
     created () {
       this.resetDate()
