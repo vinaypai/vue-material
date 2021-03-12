@@ -79,11 +79,13 @@ $md-color-levels: (
     disabled: rgba(#000, .26),
     disabled-background: rgba(#000, .12),
     highlight: rgba(#000, .12),
+    hover: darken(#e0e0e0, 5%),
     icon: rgba(#000, .54),
     icon-disabled: rgba(#000, .38),
     divider: rgba(#000, .12),
     scrollbar: #757575,
     scrollbar-background: darken(#eee, 5%),
+    selected: #e0e0e0,
     tooltip: #616161
   ),
   dark: (
@@ -95,11 +97,13 @@ $md-color-levels: (
     disabled: rgba(#fff, .3),
     disabled-background: rgba(#fff, .12),
     highlight: rgba(#fff, .12),
+    hover: lighten(#1e1e1e, 5%),
     icon: #fff,
     icon-disabled: rgba(#fff, .5),
     divider: rgba(#fff, .12),
     scrollbar: #9E9E9E,
     scrollbar-background: #212121,
+    selected: #1e1e1e,
     tooltip: #fff
   )
 );
