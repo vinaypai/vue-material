@@ -1,7 +1,7 @@
 <template>
   <md-popover :md-settings="popperSettings" md-active>
     <transition name="md-datepicker-dialog" appear @enter="setContentStyles" @after-leave="resetDate">
-      <div class="md-datepicker-dialog" :class="[$mdActiveTheme]">
+      <div class="md-daterange-picker-dialog" :class="[$mdActiveTheme]">
         <div class="md-datepicker-header">
           <span class="md-datepicker-year-select" :class="{ 'md-selected': currentView === 'year' }" @click="currentView = 'year'">{{ selectedYear }}</span>
           <div class="md-datepicker-date-select" :class="{ 'md-selected': currentView !== 'year' }" @click="currentView = 'day'">
@@ -252,7 +252,7 @@
   $md-calendar-width: 320px;
   $md-calendar-mobile-width: 296px;
 
-  .md-datepicker-dialog {
+  .md-daterange-picker-dialog {
     @include md-elevation(24);
     display: flex;
     flex-direction: column;
@@ -268,7 +268,6 @@
     will-change: opacity, transform, left, top;
 
     @include md-layout-xsmall {
-      flex-direction: column;
       top: 50% !important;
       left: 50% !important;
       transform: translate3D(-50%, -50%, 0);
@@ -341,6 +340,19 @@
 
   .md-daterange-picker-calendars {
     display: flex;
+
+    .md-datepicker-body:first-child {
+      margin-right: 16px;
+    }
+
+    @include md-layout-xsmall {
+      flex-direction: column;
+
+      .md-datepicker-body:first-child {
+        margin-right: 0;
+        margin-bottom: 16px;
+      }
+    }
   }
 
 </style>
