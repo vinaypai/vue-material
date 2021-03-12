@@ -3,12 +3,7 @@
     <transition name="md-datepicker-dialog" appear @enter="setContentStyles" @after-leave="resetDate">
       <div class="md-daterange-picker-dialog" :class="[$mdActiveTheme]">
         <div class="md-datepicker-header">
-          <span class="md-datepicker-year-select" :class="{ 'md-selected': currentView === 'year' }" @click="currentView = 'year'">{{ selectedYear }}</span>
-          <div class="md-datepicker-date-select" :class="{ 'md-selected': currentView !== 'year' }" @click="currentView = 'day'">
-            <strong class="md-datepicker-dayname">{{ shortDayName }}, </strong>
-            <strong class="md-datepicker-monthname">{{ shortMonthName }}</strong>
-            <strong class="md-datepicker-day">{{ currentDay }}</strong>
-          </div>
+          <span class="md-datepicker-range-display">{{ rangeDisplay }}</span>
         </div>
 
         <div class="md-daterange-picker-calendars">
@@ -45,18 +40,19 @@
 <script>
   import addMonths from 'date-fns/addMonths'
   import getDate from 'date-fns/getDate'
-  import getDay from 'date-fns/getDay'
   import getMonth from 'date-fns/getMonth'
   import getYear from 'date-fns/getYear'
   import isAfter from 'date-fns/isAfter'
   import isBefore from 'date-fns/isBefore'
   import isSameMonth from 'date-fns/isSameMonth'
+  import isSameYear from 'date-fns/isSameYear'
 
   import MdComponent from 'core/MdComponent'
   import MdPopover from 'components/MdPopover/MdPopover'
   import MdDialog from 'components/MdDialog/MdDialog'
 
   import MdDatepickerBody from './MdDatepickerBody'
+import { isSameDay } from 'date-fns/fp'
 
 
   const getElements = (el, selector) => {
@@ -109,39 +105,38 @@
           }
         }
       },
-      selectedDate() { // TODO: Remove this
-        return this.selectedRange[0];
-      },
-      currentDate() { // TODO: Remove this
-        return this.currentDateLeft;
-      },
-      currentDay () {
-        if (this.selectedDate) {
-          return getDate(this.selectedDate)
-        }
+      rangeDisplay() {
+        const shortMonth = (date) => this.locale.shortMonths[getMonth(date)];
+        const fmt = (date) => `${shortMonth(date)} ${getDate(date)}, ${getYear(date)}`;
+        const endash = '\u2013';
 
-        return getDate(this.currentDate)
-      },
-      selectedYear () {
-        if (this.selectedDate) {
-          return getYear(this.selectedDate)
+        if(!this.selectedRange[0] && !this.selectedRange[1]) {
+          return "Select Range";
+        } else if(this.selectedRange[0] && this.selectedRange[1]) {
+          if(isSameDay(...this.selectedRange)) {
+            return fmt(this.selectedRange[0]);
+          } else if(isSameMonth(...this.selectedRange)) {
+            // Jan 1–5, 2020
+            return shortMonth(this.selectedRange[0]) + ' ' +
+              getDate(this.selectedRange[0]) + endash + getDate(this.selectedRange[1]) + ", " +
+              getYear(this.selectedRange[0])
+          } else if(isSameYear(...this.selectedRange)) {
+            // Jan 1–Feb 5, 2020
+            return shortMonth(this.selectedRange[0]) + ' ' + getDate(this.selectedRange[0]) + endash +
+              shortMonth(this.selectedRange[1]) + ' ' + getDate(this.selectedRange[1]) + ', ' +
+              getYear(this.selectedRange[0])
+          } else {
+            return fmt(this.selectedRange[0]) + endash + fmt(this.selectedRange[1]);
+          }
+        } else {
+          let date = this.selectedRange[0] || this.selectedRange[1];
+          let fmtDate = fmt(date);
+          if(this.hoveringDate && isBefore(this.hoveringDate, date)) {
+            return '?' + endash + fmtDate;
+          } else {
+            return fmtDate + endash + '?';
+          }
         }
-
-        return getYear(this.currentDate)
-      },
-      shortDayName () {
-        if (this.selectedDate) {
-          return this.locale.shortDays[getDay(this.selectedDate)]
-        }
-
-        return this.locale.shortDays[getDay(this.currentDate)]
-      },
-      shortMonthName () {
-        if (this.selectedDate) {
-          return this.locale.shortMonths[getMonth(this.selectedDate)]
-        }
-
-        return this.locale.shortMonths[getMonth(this.currentDate)]
       },
     },
     watch: {
@@ -284,44 +279,17 @@
   }
 
   .md-datepicker-header {
-    min-width: 150px;
     padding: 16px;
 
     @include md-layout-xsmall {
-      min-width: auto;
       padding: 16px 20px;
     }
 
-    .md-datepicker-year-select {
-      cursor: pointer;
-      opacity: .54;
-      transition: opacity .3s $md-transition-default-timing;
-      font-size: 16px;
-      font-weight: 700;
-      letter-spacing: .01em;
-      line-height: 24px;
-    }
-
-    .md-datepicker-date-select {
-      cursor: pointer;
-      opacity: .54;
-      transition: opacity .3s $md-transition-default-timing;
+    .md-datepicker-range-display {
       font-size: 32px;
       font-weight: 900;
       letter-spacing: 0;
       line-height: 1.2em;
-    }
-
-    .md-datepicker-dayname {
-      display: block;
-
-      @include md-layout-xsmall {
-        display: inline-block;
-      }
-    }
-
-    .md-selected {
-      opacity: 1;
     }
   }
 
