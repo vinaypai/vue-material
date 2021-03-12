@@ -13,11 +13,6 @@
     </div>
 
     <div class="page-container-section">
-      <h2 id="datepicker">Daterange Picker</h2>
-      <code-example title="Daterange Picker Example" :component="examples['daterange-picker']"></code-example>
-    </div>
-
-    <div class="page-container-section">
       <h2 id="datepicker">Datepicker</h2>
 
       <code-example title="Basic Example" :component="examples['basic-datepicker']" />
@@ -54,6 +49,13 @@
         <api-table :headings="props.headings" :props="props.props" slot="props" />
         <api-table :headings="events.headings" :props="events.props" slot="events" />
       </api-item>
+    </div>
+
+    <div class="page-container-section">
+      <h2 id="datepicker">DateRange Picker</h2>
+      <p>Daterange pickers allow you to pick a range of dates instead of a single date.</p>
+
+      <code-example title="Daterange Picker Example" :component="examples['daterange-picker']"></code-example>
     </div>
   </page-container>
 </template>
