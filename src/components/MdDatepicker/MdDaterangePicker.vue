@@ -176,8 +176,13 @@
       },
       value: {
         immediate: true,
-        handler () {
-          this.valueDateToLocalDate()
+        handler (oldVal, newVal) {
+          // Avoid a possible infinite loop. valueDateToLocalDate
+          // can map the input value into an equivalent array but
+          // that will stil trigger the watch again a === b is false
+          if(JSON.stringify(oldVal) != JSON.stringify(newVal)) {
+            this.valueDateToLocalDate()
+          }
         }
       },
       mdModelType (type) {
