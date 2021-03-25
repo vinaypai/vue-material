@@ -52,8 +52,6 @@
             Vue.util.warn('Invalid value: Array of length 2 required')
           } else if(value[0].constructor !== value[1].constructor) {
             Vue.util.warn('Invalid value: Both elements must have the same type')
-          } else if(![Date, String, Number].find(typ => value[0] instanceof typ)) {
-            Vue.util.warn('Invalid value: Require Array of two Date, String or Number')
           } else {
             return true;
           }
