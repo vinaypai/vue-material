@@ -12760,10 +12760,6 @@ exports.default = {
           _vue2.default.util.warn('Invalid value: Array of length 2 required');
         } else if (value[0].constructor !== value[1].constructor) {
           _vue2.default.util.warn('Invalid value: Both elements must have the same type');
-        } else if (![Date, String, Number].find(function (typ) {
-          return value[0] instanceof typ;
-        })) {
-          _vue2.default.util.warn('Invalid value: Require Array of two Date, String or Number');
         } else {
           return true;
         }
