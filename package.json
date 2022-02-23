@@ -1,12 +1,13 @@
 {
   "name": "vue-material",
   "description": "Material Design for Vue.js",
-  "version": "1.0.0-beta-15",
+  "version": "1.0.0-beta-15-facteroid-2",
   "license": "MIT",
   "author": {
     "name": "marcosmoura",
     "email": "marcosvmmoura@gmail.com"
   },
+  "sideEffects": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vuematerial/vue-material.git"
